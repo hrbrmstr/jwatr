@@ -1,21 +1,26 @@
 Package: jwatr
 Type: Package
-Title: jwatr title goes here otherwise CRAN checks fail
+Title: Tools to Query and Create Web Archive Files Using the Java Web Archive Toolkit
 Version: 0.1.0
 Date: 2017-08-16
 Author: Bob Rudis (bob@rud.is)
 Maintainer: Bob Rudis <bob@rud.is>
-Description: Package jwatr description goes here otherwise CRAN checks fail
+Description: The Java Web Archive Toolkit ('JWAT') <https://sbforge.org/display/JWAT/Overview>
+    is a library of Java objects and methods which enables reading, writing and validating web 
+    archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future 
+    plans include support for reading and writing all formats supported by 'JWAT'.
 URL: https://github.com/hrbrmstr/jwatr
 BugReports: https://github.com/hrbrmstr/jwatr/issues
-License: AGPL
+SystemRequirements: Java
+License: Apache License 2.0 | file LICENSE
 Suggests:
     testthat,
     covr
 Depends:
     R (>= 3.2.0),
+    rJava,
     jwatjars
 Imports:
-    rJava,
     tibble
 RoxygenNote: 6.0.1
+Remotes: github::hrbrmstr/jwatjars

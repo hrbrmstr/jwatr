@@ -4,9 +4,12 @@
 \name{jwatr}
 \alias{jwatr}
 \alias{jwatr-package}
-\title{A package to ...}
+\title{Tools to Query and Create Web Archive Files Using the Java Web Archive Toolkit}
 \description{
-A package to ...
+The Java Web Archive Toolkit ('JWAT') \url{https://sbforge.org/display/JWAT/Overview}
+is a library of Java objects and methods which enables reading, writing and validating web
+archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future
+plans include support for reading and writing all formats supported by 'JWAT'.
 }
 \author{
 Bob Rudis (bob@rud.is)
