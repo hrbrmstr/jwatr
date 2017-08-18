@@ -23,7 +23,7 @@ will be occurring at the Java-level as well (this was a lazy PoC implementation)
 \note{
 Presently only works with gzip'd WARC files (but they are most common)
 }
-\section{Readnig Large WARC files}{
+\section{Reading Large WARC files}{
 
 
 Typical WARC files from sources like Common Crawl \url{http://commoncrawl.org/the-data/}

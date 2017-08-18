@@ -8,18 +8,36 @@ import java.util.LinkedList;
 import java.util.List;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.security.MessageDigest;
+import java.util.Date;
+import java.util.HashMap;
 
-import org.jwat.arc.ArcReader;
-import org.jwat.arc.ArcReaderFactory;
-import org.jwat.arc.ArcRecordBase;
+import org.jwat.common.ArrayUtils;
 import org.jwat.common.ByteCountingPushBackInputStream;
 import org.jwat.common.ContentType;
+import org.jwat.common.DigestInputStreamNoSkip;
+import org.jwat.common.HttpHeader;
 import org.jwat.common.HttpHeader;
 import org.jwat.common.Payload;
+import org.jwat.common.Payload;
+import org.jwat.common.PayloadWithHeaderAbstract;
 import org.jwat.common.RandomAccessFileInputStream;
+import org.jwat.common.RandomAccessFileOutputStream;
+import org.jwat.tools.tasks.compress.RecordEntry;
 import org.jwat.common.UriProfile;
+import org.jwat.gzip.GzipConstants;
 import org.jwat.gzip.GzipEntry;
 import org.jwat.gzip.GzipReader;
+import org.jwat.gzip.GzipWriter;
+import org.jwat.tools.core.IOUtils;
+import org.jwat.tools.core.ThreadLocalObjectPool;
 import org.jwat.tools.core.ValidatorPlugin;
 import org.jwat.warc.WarcHeader;
 import org.jwat.warc.WarcReader;
@@ -43,6 +61,14 @@ public class App {
 
   public List<byte[]> httpRawHeaders = null;
   public List<byte[]> warc_payload = null;
+
+	private static final int INPUT_BUFFER_SIZE = 16384;
+
+	//private static final int GZIP_OUTPUT_BUFFER_SIZE = 1024 * 1024;
+	private static final int GZIP_OUTPUT_BUFFER_SIZE = 16384;
+
+	//private static final int BUFFER_SIZE = 65 * 1024;
+	private static final int BUFFER_SIZE = 8192;
 
   public void process(String fil) {
 
@@ -182,4 +208,141 @@ public class App {
 
   }
 
+public static void compressWarcFile(String srcFname, String dstFname) {
+ File srcFile = new File(srcFname);
+ File dstFile = new File(dstFname);
+ RandomAccessFile raf = null;
+ RandomAccessFileInputStream rafin = null;
+ InputStream in = null;
+ byte[] buffer = new byte[BUFFER_SIZE];
+ InputStream uncompressedFileIn = null;
+ RandomAccessFile rafOut = null;
+ OutputStream out = null;
+ GzipWriter writer = null;
+ GzipEntry entry = null;
+ WarcReader warcReader = null;
+ WarcRecord warcRecord = null;
+ OutputStream cout = null;
+ Payload payload;
+ int read;
+ InputStream pin = null;
+ MessageDigest md5uncomp = null;
+ MessageDigest md5comp = null;
+ InputStream compressedFileIn = null;
+ GzipReader reader = null;
+ InputStream uncompressedEntryIn = null;
+ RecordEntry recordEntry = null;
+
+ try {
+  raf = new RandomAccessFile( srcFile, "r" );
+  rafin = new RandomAccessFileInputStream( raf );
+  in = new ByteCountingPushBackInputStream( new BufferedInputStream( rafin, INPUT_BUFFER_SIZE ), 32 );
+  rafOut = new RandomAccessFile(dstFile, "rw");
+  out = new RandomAccessFileOutputStream(rafOut);
+  writer = new GzipWriter(out, GZIP_OUTPUT_BUFFER_SIZE);
+  writer.setCompressionLevel(java.util.zip.Deflater.DEFAULT_COMPRESSION);
+
+  uncompressedFileIn = in ;
+
+  warcReader = WarcReaderFactory.getReader(uncompressedFileIn);
+  warcReader.setBlockDigestEnabled(true);
+  warcReader.setPayloadDigestEnabled(true);
+  long readerConsumed = warcReader.getConsumed();
+  while ((warcRecord = warcReader.getNextRecord()) != null) {
+   Date date = warcRecord.header.warcDate;
+   if (date == null) {
+    date = new Date();
+   }
+   entry = new GzipEntry();
+   entry.magic = GzipConstants.GZIP_MAGIC;
+   entry.cm = GzipConstants.CM_DEFLATE;
+   entry.flg = 0;
+   entry.mtime = date.getTime() / 1000;
+   entry.xfl = 0;
+   entry.os = GzipConstants.OS_UNKNOWN;
+   writer.writeEntryHeader(entry);
+
+   cout = entry.getOutputStream();
+
+    payload = warcRecord.getPayload();
+    if (payload != null) {
+     // Payload
+     pin = payload.getInputStreamComplete();
+     pin.close();
+     pin = null;
+     payload.close();
+    }
+    warcRecord.close();
+    long offset = warcRecord.getStartOffset();
+    long consumed = warcRecord.getConsumed();
+    warcRecord = null;
+    long oldPos = raf.getFilePointer();
+    raf.seek(offset);
+    while (consumed > 0) {
+     read = (int) Math.min(consumed, (long) buffer.length);
+     read = raf.read(buffer, 0, read);
+     if (read > 0) {
+      consumed -= read;
+      cout.write(buffer, 0, read);
+     }
+    }
+    raf.seek(oldPos);
+
+   cout.close();
+   cout = null;
+   entry.close();
+   entry = null;
+   readerConsumed = warcReader.getConsumed();
+  }
+
+  if (readerConsumed < raf.length()) {
+   entry = new GzipEntry();
+   entry.magic = GzipConstants.GZIP_MAGIC;
+   entry.cm = GzipConstants.CM_DEFLATE;
+   entry.flg = 0;
+   entry.mtime = new Date().getTime() / 1000;
+   entry.xfl = 0;
+   entry.os = GzipConstants.OS_UNKNOWN;
+   writer.writeEntryHeader(entry);
+   cout = entry.getOutputStream();
+   raf.seek(readerConsumed);
+   while ((read = raf.read(buffer)) != -1) {
+    cout.write(buffer, 0, read);
+   }
+   cout.close();
+   cout = null;
+   entry.close();
+   entry = null;
+  }
+  writer.close();
+  writer = null;
+  out.close();
+  out = null;
+  rafOut.close();
+  rafOut = null;
+  warcReader.close();
+  warcReader = null;
+  uncompressedFileIn.close();
+  uncompressedFileIn = null; in .close(); in = null;
+
+
+ } catch (Throwable t) {
+  t.printStackTrace();
+ } finally {
+  IOUtils.closeIOQuietly(pin);
+  IOUtils.closeIOQuietly(warcRecord);
+  IOUtils.closeIOQuietly(warcReader);
+  IOUtils.closeIOQuietly(uncompressedFileIn);
+  IOUtils.closeIOQuietly( in );
+  IOUtils.closeIOQuietly(cout);
+  IOUtils.closeIOQuietly(writer);
+  IOUtils.closeIOQuietly(out);
+  IOUtils.closeIOQuietly(rafOut);
+  IOUtils.closeIOQuietly(uncompressedEntryIn);
+  IOUtils.closeIOQuietly(entry);
+  IOUtils.closeIOQuietly(reader);
+  IOUtils.closeIOQuietly(compressedFileIn);
+ }
 }
+
+    }

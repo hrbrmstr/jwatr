@@ -3,7 +3,7 @@
 #' The API for this functiuon is likely to change since this is a WIP. Optimizations
 #' will be occurring at the Java-level as well (this was a lazy PoC implementation).
 #'
-#' @section Readnig Large WARC files:
+#' @section Reading Large WARC files:
 #'
 #' Typical WARC files from sources like Common Crawl <http://commoncrawl.org/the-data/>
 #' are between 100 MB and ~1 GB in size (compressed). Since the goal of `read_warc()` is

@@ -1,7 +1,7 @@
 
 `jwatr` : Tools to Query and Create Web Archive Files Using the Java Web Archive Toolkit
 
-The Java Web Archive Toolkit ('JWAT') <https://sbforge.org/display/JWAT/Overview> s a library of Java objects and methods which enables reading, writing and validating web archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future plans include support for reading and writing all formats supported by 'JWAT'.
+The Java Web Archive Toolkit ('JWAT') <https://sbforge.org/display/JWAT/Overview> is a library of Java objects and methods which enables reading, writing and validating web archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future plans include support for reading and writing all formats supported by 'JWAT'.
 
 The following functions are implemented:
 
@@ -106,7 +106,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Fri Aug 18 10:48:35 2017"
+    ## [1] "Fri Aug 18 14:21:22 2017"
 
 ``` r
 test_dir("tests/")
