@@ -50,4 +50,7 @@ writeBin(warc_record_from_url("https://www.r-project.org/"), w, useBytes = FALSE
 writeBin(warc_record_from_url("https://stackoverflow.com/questions/tagged/r"), w, useBytes = FALSE);
 close(w)
 
+compress_warc_file <- J("is.rud.wrc.App")$compressWarcFile
+compress_warc_file(path.expand("~/Desktop/a.warc"), path.expand("~/Desktop/a.warc.gz"))
+
 glimpse(xdf <- read_warc("~/Desktop/a.warc.gz", include_payload = TRUE))
