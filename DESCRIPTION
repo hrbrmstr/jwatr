@@ -1,0 +1,21 @@
+Package: jwatr
+Type: Package
+Title: jwatr title goes here otherwise CRAN checks fail
+Version: 0.1.0
+Date: 2017-08-16
+Author: Bob Rudis (bob@rud.is)
+Maintainer: Bob Rudis <bob@rud.is>
+Description: Package jwatr description goes here otherwise CRAN checks fail
+URL: https://github.com/hrbrmstr/jwatr
+BugReports: https://github.com/hrbrmstr/jwatr/issues
+License: AGPL
+Suggests:
+    testthat,
+    covr
+Depends:
+    R (>= 3.2.0),
+    jwatjars
+Imports:
+    rJava,
+    tibble
+RoxygenNote: 6.0.1

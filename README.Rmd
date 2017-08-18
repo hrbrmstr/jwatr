@@ -1,0 +1,39 @@
+---
+output: rmarkdown::github_document
+---
+
+`jwatr` : ...
+
+The following functions are implemented:
+
+### Installation
+
+```{r eval=FALSE}
+devtools::install_github("hrbrmstr/jwatr")
+```
+
+```{r message=FALSE, warning=FALSE, error=FALSE, include=FALSE}
+options(width=120)
+```
+
+### Usage
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(jwatr)
+
+# current verison
+packageVersion("jwatr")
+
+```
+
+### Test Results
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(jwatr)
+library(testthat)
+
+date()
+
+test_dir("tests/")
+```
+
