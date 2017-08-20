@@ -1,4 +1,3 @@
-
 .write_response_response <- function(wobj, res) {
 
   hdr_ct <- length(res$all_headers)
