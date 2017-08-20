@@ -47,7 +47,7 @@ devtools::install_github("hrbrmstr/jwatr")
 options(width=120)
 ```
 
-### Usage
+### Reading WARC Files
 
 ```{r message=FALSE, warning=FALSE, error=FALSE}
 library(rJava)
@@ -57,7 +57,9 @@ library(tidyverse)
 
 # current verison
 packageVersion("jwatr")
+```
 
+```{r message=FALSE, warning=FALSE, error=FALSE}
 xdf <- read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
                  warc_types = "response", TRUE)
 
@@ -71,6 +73,33 @@ image_read(imgs$payload[[1]])
 ```
 
 ![](imgs/img1.jpeg)
+
+### Writing WARC Files
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+library(jwatr)
+library(magick)
+library(htmltools)
+library(tidyverse)
+
+wf <- warc_file("~/Desktop/test")
+warc_write_response(wf, "https://rud.is/b/")
+warc_write_response(wf, "https://www.rstudio.com/")
+warc_write_response(wf, "https://www.r-project.org/")
+warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.pdf")
+warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
+close_warc_file(wf)
+
+xdf <- read_warc("~/Desktop/test.warc.gz", include_payload = TRUE)
+
+glimpse(xdf)
+
+select(xdf, content_length, http_protocol_content_type)
+
+image_read(xdf$payload[[5]])
+```
+
+![](imgs/img2.png)
 
 ### Test Results
 
