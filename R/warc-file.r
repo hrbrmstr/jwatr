@@ -46,7 +46,6 @@ warc_file <- function(path, gzip=TRUE) {
 
 }
 
-
 #' Close a WARC file
 #'
 #' @md
