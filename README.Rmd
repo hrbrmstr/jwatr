@@ -82,7 +82,7 @@ library(magick)
 library(htmltools)
 library(tidyverse)
 
-wf <- warc_file("~/Desktop/test")
+wf <- warc_file("/tmp/test")
 warc_write_response(wf, "https://rud.is/b/")
 warc_write_response(wf, "https://www.rstudio.com/")
 warc_write_response(wf, "https://www.r-project.org/")
@@ -90,7 +90,7 @@ warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.
 warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
 close_warc_file(wf)
 
-xdf <- read_warc("~/Desktop/test.warc.gz", include_payload = TRUE)
+xdf <- read_warc("/tmp/test.warc.gz", include_payload = TRUE)
 
 glimpse(xdf)
 

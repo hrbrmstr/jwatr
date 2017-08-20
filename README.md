@@ -115,7 +115,7 @@ library(magick)
 library(htmltools)
 library(tidyverse)
 
-wf <- warc_file("~/Desktop/test")
+wf <- warc_file("/tmp/test")
 warc_write_response(wf, "https://rud.is/b/")
 warc_write_response(wf, "https://www.rstudio.com/")
 warc_write_response(wf, "https://www.r-project.org/")
@@ -123,14 +123,14 @@ warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.
 warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
 close_warc_file(wf)
 
-xdf <- read_warc("~/Desktop/test.warc.gz", include_payload = TRUE)
+xdf <- read_warc("/tmp/test.warc.gz", include_payload = TRUE)
 
 glimpse(xdf)
 ```
 
     ## Observations: 5
     ## Variables: 14
-    ## $ warc_record_id             <chr> "<urn:uuid:5d6c2067-a55f-41b2-83c6-2ef50e9f279a>", "<urn:uuid:9ccac3c0-e9a9-4248...
+    ## $ warc_record_id             <chr> "<urn:uuid:b25d919b-b051-424b-97c5-425d07dca784>", "<urn:uuid:a03bbba2-d49a-4bd9...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response"
     ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "104.196.200.5", "137.208.57.37", "137.208.57.37",...
@@ -176,7 +176,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Sat Aug 19 21:30:57 2017"
+    ## [1] "Sat Aug 19 21:39:00 2017"
 
 ``` r
 test_dir("tests/")
