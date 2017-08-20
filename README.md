@@ -9,7 +9,7 @@ The following functions are implemented:
 
 *Reading*
 
--   `read_warc`: Read a WARC file
+-   `read_warc`: Read a WARC file (currently gzip stream WARCs)
 
 *Writing*
 
@@ -148,7 +148,7 @@ glimpse(xdf)
 
     ## Observations: 7
     ## Variables: 14
-    ## $ warc_record_id             <chr> "<urn:uuid:1eda8e1e-76c1-40b7-9a5d-168333f5cb28>", "<urn:uuid:4e37443a-e91f-486d...
+    ## $ warc_record_id             <chr> "<urn:uuid:049ea07a-3700-4f90-b7a5-f95fa3452116>", "<urn:uuid:cd63c6ea-9978-4c7f...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
     ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
@@ -217,7 +217,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Sun Aug 20 09:03:02 2017"
+    ## [1] "Sun Aug 20 09:10:37 2017"
 
 ``` r
 test_dir("tests/")

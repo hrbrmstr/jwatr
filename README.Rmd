@@ -15,7 +15,7 @@ The following functions are implemented:
 
 *Reading*
 
-- `read_warc`:	Read a WARC file
+- `read_warc`:	Read a WARC file (currently gzip stream WARCs)
 
 *Writing*
 
