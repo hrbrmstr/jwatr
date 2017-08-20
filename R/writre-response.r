@@ -1,62 +1,45 @@
-#' Add the response to a HTTP GET request to a WARC file
+#' Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 #'
+#' If a plain, single, character URL is provided, a `curl` request will be made
+#' and the contents of the result will be added to the WARC file.
+#'
+#' If an `httr` `response` object is provided, it will be transformed and the
+#' contents of the result will be added to the WARC file.
+#'
+#' @md
 #' @param wobj a WARC file object created with [warc_file]()
-#' @param x A single, valid URL to retrieve the contents of or an `httr` `response` object
+#' @param x Either a single, valid URL to retrieve the contents of or an `httr` `response` object
 #' @export
 #' @examples \dontrun{
-#' wf <- warc_file("~/Desktop/test")
+#' tf <- tempfile("test")
+#' wf <- warc_file(tf)
 #' warc_write_response(wf, "https://rud.is/b/")
+#' warc_write_response(wf, GET("https://rud.is/b/"))
 #' warc_write_response(wf, "https://www.rstudio.com/")
 #' warc_write_response(wf, "https://www.r-project.org/")
-#' warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.pdf")
+#' warc_write_response(wf, "http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf")
+#'
+#' POST(
+#'   url = "https://data.police.uk/api/crimes-street/all-crime",
+#'   query = list( lat = "52.629729", lng = "-1.131592", date = "2017-01")
+#' ) -> uk_res
+#'
+#' warc_write_response(wf, uk_res)
 #' warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
+#'
 #' close_warc_file(wf)
+#' unlink(tf)
 #' }
 warc_write_response <- function(wobj, x) {
 
   if (is_url(x)) {
-    .write_response_url(x)
-  } else if (inherits(x, "response")){
-    .write_response_response(x)
+    .write_response_url(wobj, x)
+  } else if (inherits(x, "response")) {
+    .write_response_response(wobj, x)
   } else {
-    message("Input must be a valid, curl-able URL or an httr::response object.")
+    message("Input must be a valid, curl_fetch-able URL or an httr::response object.")
   }
 
   invisible(wobj)
-
-}
-
-.write_response_url <- function(URL) {
-
-  dom <- urltools::domain(URL)
-  ip <- curl::nslookup(dom)[1]
-
-  res <- curl::curl_fetch_memory(URL, handle = curl::new_handle(followlocation=TRUE))
-
-  hdrs <- stri_split_fixed(rawToChar(res$headers), "\r\n\r\n")[[1]]
-  hdrs <- charToRaw(sprintf("%s\r\n\r\n", hdrs[[length(hdrs)-1]]))
-
-  hdr <- curl::parse_headers_list(hdrs)
-  content_type <- hdr$`content-type`[1]
-
-  clen <- sum(lengths(list(hdrs, res$content)))
-
-  c(
-    "WARC/1.0",
-    "WARC-Type: response",
-    sprintf("WARC-Date: %s", strftime(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz="GMT")),
-    sprintf("WARC-Record-ID: <urn:uuid:%s>", uuid::UUIDgenerate()),
-    sprintf("Content-Length: %s", clen),
-    sprintf("Content-Type: application/http; msgtype=response"),
-    sprintf("WARC-Identified-Payload-Type: %s", content_type),
-    sprintf("WARC-IP-Address: %s", ip),
-    sprintf("WARC-Target-URI: %s", URL)
-  ) -> warc_fields
-
-  wraw <- charToRaw(paste0(warc_fields, sep="", collapse="\r\n"))
-
-  tmp <- c(wraw, charToRaw("\r\n\r\n"), hdrs, res$content, charToRaw("\r\n\r\n"))
-
-  writeBin(tmp, wobj$wf, useBytes = FALSE)
 
 }

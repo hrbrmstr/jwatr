@@ -22,12 +22,23 @@ A \code{.warc} or \code{.warc.gz} extension will be added to \code{path} by this
 }
 \examples{
 \dontrun{
-wf <- warc_file("~/Desktop/test")
+tf <- tempfile("test")
+wf <- warc_file(tf)
 warc_write_response(wf, "https://rud.is/b/")
+warc_write_response(wf, GET("https://rud.is/b/"))
 warc_write_response(wf, "https://www.rstudio.com/")
 warc_write_response(wf, "https://www.r-project.org/")
-warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.pdf")
+warc_write_response(wf, "http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf")
+
+POST(
+  url = "https://data.police.uk/api/crimes-street/all-crime",
+  query = list( lat = "52.629729", lng = "-1.131592", date = "2017-01")
+) -> uk_res
+
+warc_write_response(wf, uk_res)
 warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
+
 close_warc_file(wf)
+unlink(tf)
 }
 }

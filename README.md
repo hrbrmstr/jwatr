@@ -14,7 +14,7 @@ The following functions are implemented:
 *Writing*
 
 -   `warc_file`: Create a new WARC file
--   `warc_write_response`: Add the response to a HTTP GET request to a WARC file
+-   `warc_write_response`: Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 -   `close_warc_file`: Close a WARC file
 
 NOTE: To read in typical (~800MB-1GB gzip'd WARC files) you should consider doing the following (in order) in your scripts:
@@ -111,59 +111,100 @@ image_read(imgs$payload[[1]])
 
 ``` r
 library(jwatr)
+library(httr)
 library(magick)
-library(htmltools)
 library(tidyverse)
 
-wf <- warc_file("/tmp/test")
+tf <- tempfile("test")
+wf <- warc_file(tf)
+
 warc_write_response(wf, "https://rud.is/b/")
+
+# store a simple httr::GET request
+warc_write_response(wf, GET("https://rud.is/b/"))
+
 warc_write_response(wf, "https://www.rstudio.com/")
 warc_write_response(wf, "https://www.r-project.org/")
-warc_write_response(wf, "https://journal.r-project.org/archive/2016-2/RJ-2016-2.pdf")
+
+# all valid content types work, like this PDF
+warc_write_response(wf, "http://che.org.il/wp-content/uploads/2016/12/pdf-sample.pdf")
+
+# complex API calls can be made and the results stored in the WARC file as well
+# this API call returns a JSON object
+POST(
+ url = "https://data.police.uk/api/crimes-street/all-crime",
+ query = list( lat = "52.629729", lng = "-1.131592", date = "2017-01")
+) -> uk_res
+
+warc_write_response(wf, uk_res)
 warc_write_response(wf, "https://journal.r-project.org/RLogo.png")
+
 close_warc_file(wf)
 
-xdf <- read_warc("/tmp/test.warc.gz", include_payload = TRUE)
+xdf <- read_warc(sprintf("%s.warc.gz", tf), include_payload = TRUE)
 
 glimpse(xdf)
 ```
 
-    ## Observations: 5
+    ## Observations: 7
     ## Variables: 14
-    ## $ warc_record_id             <chr> "<urn:uuid:b25d919b-b051-424b-97c5-425d07dca784>", "<urn:uuid:a03bbba2-d49a-4bd9...
+    ## $ warc_record_id             <chr> "<urn:uuid:1eda8e1e-76c1-40b7-9a5d-168333f5cb28>", "<urn:uuid:4e37443a-e91f-486d...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
-    ## $ warc_type                  <chr> "response", "response", "response", "response", "response"
-    ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "104.196.200.5", "137.208.57.37", "137.208.57.37",...
-    ## $ content_length             <dbl> 38764, 334, 7244, 31811093, 166003
-    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html", "text/html", "application/pdf", "image/...
-    ## $ profile                    <chr> NA, NA, NA, NA, NA
-    ## $ target_uri                 <chr> "https://rud.is/b/", "https://www.rstudio.com/", "https://www.r-project.org/", "...
-    ## $ date                       <dttm> 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20
-    ## $ http_status_code           <dbl> 200, 403, 200, 200, 200
-    ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html", "text/html", "application/pdf", "image/...
-    ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
+    ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
+    ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
+    ## $ content_length             <dbl> 38764, 38764, 334, 7244, 8207, 511564, 166003
+    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
+    ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA
+    ## $ target_uri                 <chr> "https://rud.is/b/", "https://rud.is/b/", "https://www.rstudio.com/", "https://w...
+    ## $ date                       <dttm> 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20
+    ## $ http_status_code           <dbl> 200, 200, 403, 200, 200, 200, 200
+    ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
+    ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
     ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
     ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
+
+``` r
+# decode the WARC stored JSON response from the UK Crimes API
+glimpse(jsonlite::fromJSON(rawToChar(xdf[6,]$payload[[1]]), flatten=TRUE))
+```
+
+    ## Observations: 1,318
+    ## Variables: 13
+    ## $ category                <chr> "anti-social-behaviour", "anti-social-behaviour", "anti-social-behaviour", "anti-so...
+    ## $ location_type           <chr> "Force", "Force", "Force", "Force", "Force", "Force", "Force", "Force", "Force", "F...
+    ## $ context                 <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
+    ## $ persistent_id           <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
+    ## $ id                      <int> 54163555, 54167687, 54167689, 54168393, 54168392, 54168391, 54168386, 54168381, 541...
+    ## $ location_subtype        <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
+    ## $ month                   <chr> "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-...
+    ## $ location.latitude       <chr> "52.616961", "52.629963", "52.641646", "52.635184", "52.627880", "52.636250", "52.6...
+    ## $ location.longitude      <chr> "-1.120719", "-1.122291", "-1.131486", "-1.135455", "-1.144730", "-1.133691", "-1.1...
+    ## $ location.street.id      <int> 882391, 883268, 884340, 883410, 883453, 883415, 882352, 883332, 882350, 883148, 883...
+    ## $ location.street.name    <chr> "On or near Hartopp Road", "On or near Prebend Street", "On or near Yarmouth Street...
+    ## $ outcome_status.category <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
+    ## $ outcome_status.date     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
 
 ``` r
 select(xdf, content_length, http_protocol_content_type)
 ```
 
-    ## # A tibble: 5 x 2
+    ## # A tibble: 7 x 2
     ##   content_length http_protocol_content_type
     ##            <dbl>                      <chr>
     ## 1          38764   text/html; charset=UTF-8
-    ## 2            334                  text/html
-    ## 3           7244                  text/html
-    ## 4       31811093            application/pdf
-    ## 5         166003                  image/png
+    ## 2          38764   text/html; charset=UTF-8
+    ## 3            334                  text/html
+    ## 4           7244                  text/html
+    ## 5           8207            application/pdf
+    ## 6         511564           application/json
+    ## 7         166003                  image/png
 
 ``` r
 image_read(xdf$payload[[5]])
 ```
 
     ##   format width height colorspace filesize
-    ## 1    PNG  1810   1400       sRGB   165769
+    ## 1    PDF   595    842       sRGB    27600
 
 ![](imgs/img2.png)
 
@@ -176,7 +217,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Sat Aug 19 21:39:00 2017"
+    ## [1] "Sun Aug 20 09:03:02 2017"
 
 ``` r
 test_dir("tests/")
