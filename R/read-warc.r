@@ -55,7 +55,7 @@ read_warc <- function(path, warc_types = NULL, include_payload = FALSE) {
       warc_content_type = warc_obj$contentTypeStr,
       warc_type = warc_obj$warcTypeStr,
       ip_address = warc_obj$warcIpAddress,
-      content_length = warc_obj$contentLengthStr,
+      content_length = as.numeric(warc_obj$contentLengthStr),
       payload_type = warc_obj$warcIdentifiedPayloadTypeStr,
       profile = warc_obj$warcProfileStr,
       target_uri = warc_obj$warcTargetUriStr,

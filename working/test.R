@@ -3,13 +3,14 @@ library(urltools)
 library(stringi)
 library(uuid)
 library(httr)
+library(tidyverse)
 
 cf <- curl_fetch_memory("https://rud.is/b", handle = new_handle(followlocation=TRUE))
 
 warc_record_from_url <- function(URL) {
 
-  dom <- domain(URL)
-  ip <- nslookup(dom)
+  dom <- urltools::domain(URL)
+  ip <- curl::nslookup(dom)
 
   res <- curl::curl_fetch_memory(URL, handle = new_handle(followlocation=TRUE))
 

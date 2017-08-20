@@ -9,9 +9,19 @@ is a library of Java objects and methods which enables reading, writing and vali
 archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future 
 plans include support for reading and writing all formats supported by 'JWAT'.
 
+WIP!!! Reading & writing need some optimization and edge case checking. There's also a chance I'll change the name to `warc` but some folks are using that package now and I dinna want to cause pain there yet.
+
 The following functions are implemented:
 
-- `read_warc`:	Read a WARC file!
+*Reading*
+
+- `read_warc`:	Read a WARC file
+
+*Writing*
+
+- `warc_file`:	Create a new WARC file
+- `warc_write_response`:	Add the response to a HTTP GET request to a WARC file
+- `close_warc_file`:	Close a WARC file
 
 NOTE: To read in typical (~800MB-1GB gzip'd WARC files) you should consider doing the following (in order) in your scripts:
 

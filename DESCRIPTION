@@ -21,6 +21,10 @@ Depends:
     rJava,
     jwatjars
 Imports:
-    tibble
+    tibble,
+    httr,
+    curl,
+    stringi,
+    tools
 RoxygenNote: 6.0.1
 Remotes: github::hrbrmstr/jwatjars
