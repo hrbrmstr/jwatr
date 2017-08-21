@@ -7,15 +7,20 @@ WIP!!! Reading & writing need some optimization and edge case checking. There's 
 
 The following functions are implemented:
 
-*Reading*
+**Reading**
 
 -   `read_warc`: Read a WARC file (compressed or uncompressed)
 
-*Writing*
+**Writing**
 
 -   `warc_file`: Create a new WARC file
 -   `warc_write_response`: Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 -   `close_warc_file`: Close a WARC file
+
+**Utility**
+
+-   `payload_content`: Helper function to convert WARC raw headers+payload into something useful
+-   `is_compressed`: Test if a raw vector is gzip compressed
 
 NOTE: To read in typical (~800MB-1GB gzip'd WARC files) you should consider doing the following (in order) in your scripts:
 
@@ -75,7 +80,7 @@ glimpse(read_warc(system.file("extdata/bbc.warc", package="jwatr")))
 ``` r
 # larger example
 xdf <- read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
-                 warc_types = "response", TRUE)
+                 warc_types = "response", include_payload = TRUE)
 
 glimpse(xdf)
 ```
@@ -98,6 +103,18 @@ glimpse(xdf)
     ## $ payload                    <list> [<32, 30, 30, 38, 30, 34, 33, 30, 32, 30, 34, 38, 32, 35, 0a, 77, 77, 77, 2e, 6...
 
 ``` r
+# get the payload content
+payload_content(url = xdf$target_uri[279], ctype = xdf$http_protocol_content_type[279], 
+                xdf$http_raw_headers[[279]], xdf$payload[[279]])
+```
+
+    ## {xml_document}
+    ## <html>
+    ## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n<link rel="stylesheet" href="/styles ...
+    ## [2] <body class="Home">\n\n<!--BEGIN HEADER 1-->\n<table style="background-color:white " cellspacing="0" width="100%" ...
+
+``` r
+# or ingest the raw bits yourself
 imgs <- filter(xdf, grepl("(png|gif|jpeg)$", http_protocol_content_type))
 
 imgs
@@ -182,7 +199,7 @@ glimpse(xdf)
     ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
     ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
     ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
-    ## $ warc_record_id             <chr> "<urn:uuid:56467c21-77f3-4f31-b21e-0b786016ca23>", "<urn:uuid:90f19068-8baa-491d...
+    ## $ warc_record_id             <chr> "<urn:uuid:aaa0de10-0735-46f5-81cd-6b1d7de52f07>", "<urn:uuid:576fc1fd-a1bd-40f3...
     ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
 
 ``` r
@@ -239,7 +256,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Mon Aug 21 04:50:28 2017"
+    ## [1] "Mon Aug 21 07:07:41 2017"
 
 ``` r
 test_dir("tests/")

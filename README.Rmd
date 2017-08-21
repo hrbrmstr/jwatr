@@ -11,15 +11,20 @@ WIP!!! Reading & writing need some optimization and edge case checking. There's 
 
 The following functions are implemented:
 
-*Reading*
+**Reading**
 
 - `read_warc`:	Read a WARC file (compressed or uncompressed)
 
-*Writing*
+**Writing**
 
 - `warc_file`:	Create a new WARC file
 - `warc_write_response`:	Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 - `close_warc_file`:	Close a WARC file
+
+**Utility**
+
+- `payload_content`:	Helper function to convert WARC raw headers+payload into something useful
+- `is_compressed`:	Test if a raw vector is gzip compressed
 
 NOTE: To read in typical (~800MB-1GB gzip'd WARC files) you should consider doing the following (in order) in your scripts:
 
@@ -63,10 +68,15 @@ glimpse(read_warc(system.file("extdata/bbc.warc", package="jwatr")))
 
 # larger example
 xdf <- read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
-                 warc_types = "response", TRUE)
+                 warc_types = "response", include_payload = TRUE)
 
 glimpse(xdf)
 
+# get the payload content
+payload_content(url = xdf$target_uri[279], ctype = xdf$http_protocol_content_type[279], 
+                xdf$http_raw_headers[[279]], xdf$payload[[279]])
+
+# or ingest the raw bits yourself
 imgs <- filter(xdf, grepl("(png|gif|jpeg)$", http_protocol_content_type))
 
 imgs
