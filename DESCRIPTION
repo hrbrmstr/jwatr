@@ -24,6 +24,7 @@ Imports:
     httr,
     curl,
     stringi,
-    tools
+    tools,
+    stats
 RoxygenNote: 6.0.1
 Remotes: github::hrbrmstr/jwatjars

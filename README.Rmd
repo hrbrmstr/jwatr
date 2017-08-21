@@ -14,6 +14,7 @@ The following functions are implemented:
 **Reading**
 
 - `read_warc`:	Read a WARC file (compressed or uncompressed)
+- `warc_stream_in`:	Stream in records from a WARC file
 
 **Writing**
 
@@ -136,6 +137,39 @@ image_read(xdf$payload[[5]])
 
 ```{r echo=FALSE}
 unlink(tf)
+```
+
+### Streaming
+
+The `warc_stream_in()` function provides a pure-R method for stream processing WARC
+files through the use of an R callback handler. One way of using this is to build a
+data frame. The following example builds a data frame of WARC `response` records. Space
+is reserved for a 10,000-element list which will get truncated or expanded as necessary:
+
+```{r message=FALSE, warning=FALSE, error=FALSE}
+xdf <- list(10000)
+xdf_i <- 0
+
+myfun <- function(headers, payload, ...) {
+  headers <- setNames(headers, gsub("-", "_", names(headers)))
+  xdf_i <<- xdf_i + 1
+  headers$payload <- list(payload)
+  xdf[xdf_i] <<- list(headers)
+}
+
+(n <- warc_stream_in(
+  system.file("extdata/sample.warc.gz", package="jwatr"),
+  myfun,
+  warc_types = "response"
+))
+
+xdf <- bind_rows(xdf)
+
+glimpse(xdf)
+
+count(xdf, content_type)
+
+cat(rawToChar(xdf$payload[[1]]))
 ```
 
 ### Test Results

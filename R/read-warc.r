@@ -47,7 +47,7 @@ read_warc <- function(path, warc_types = NULL, include_payload = FALSE) {
 
   path <- path.expand(path)
 
-  if (!file.exists(path)) stop(sprintf('"%s" not found.', path, .call=FALSE))
+  if (!file.exists(path)) stop(sprintf('"%s" not found.', path, call.=FALSE))
 
   warc_obj <- new(J("is.rud.wrc.App"))
   warc_obj$process(path)

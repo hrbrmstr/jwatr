@@ -10,6 +10,7 @@ The following functions are implemented:
 **Reading**
 
 -   `read_warc`: Read a WARC file (compressed or uncompressed)
+-   `warc_stream_in`: Stream in records from a WARC file
 
 **Writing**
 
@@ -191,16 +192,16 @@ glimpse(xdf)
     ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
-    ## $ content_length             <dbl> 38764, 38764, 334, 7244, 8207, 511564, 166003
-    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
+    ## $ content_length             <dbl> 38708, 38710, 612621, 7244, 8207, 511564, 166003
+    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html; charset=UTF-...
     ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA
     ## $ date                       <dttm> 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21
-    ## $ http_status_code           <dbl> 200, 200, 403, 200, 200, 200, 200
-    ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
-    ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
-    ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
-    ## $ warc_record_id             <chr> "<urn:uuid:aaa0de10-0735-46f5-81cd-6b1d7de52f07>", "<urn:uuid:576fc1fd-a1bd-40f3...
-    ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
+    ## $ http_status_code           <dbl> NA, NA, NA, 200, 200, 200, 200
+    ## $ http_protocol_content_type <chr> NA, NA, NA, "text/html", "application/pdf", "application/json", "image/png"
+    ## $ http_version               <chr> "HTTP/2", "HTTP/2", "HTTP/2", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
+    ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a>, <48, 54, 54, 50, 2f, 32,...
+    ## $ warc_record_id             <chr> "<urn:uuid:0c352207-be9f-4994-89fe-6b64defa1596>", "<urn:uuid:fdefb9de-4e36-40e9...
+    ## $ payload                    <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a, 73, 65, 72, 76, 65, 72, 3...
 
 ``` r
 # decode the WARC stored JSON response from the UK Crimes API
@@ -230,9 +231,9 @@ select(xdf, content_length, http_protocol_content_type)
     ## # A tibble: 7 x 2
     ##   content_length http_protocol_content_type
     ##            <dbl>                      <chr>
-    ## 1          38764   text/html; charset=UTF-8
-    ## 2          38764   text/html; charset=UTF-8
-    ## 3            334                  text/html
+    ## 1          38708                       <NA>
+    ## 2          38710                       <NA>
+    ## 3         612621                       <NA>
     ## 4           7244                  text/html
     ## 5           8207            application/pdf
     ## 6         511564           application/json
@@ -243,9 +244,68 @@ image_read(xdf$payload[[5]])
 ```
 
     ##   format width height colorspace filesize
-    ## 1    PDF   595    842       sRGB    27600
+    ## 1    PDF   595    842       sRGB    27165
 
 ![](imgs/img2.png)
+
+### Streaming
+
+The `warc_stream_in()` function provides a pure-R method for stream processing WARC files through the use of an R callback handler. One way of using this is to build a data frame. The following example builds a data frame of WARC `response` records. Space is reserved for a 10,000-element list which will get truncated or expanded as necessary:
+
+``` r
+xdf <- list(10000)
+xdf_i <- 0
+
+myfun <- function(headers, payload, ...) {
+  headers <- setNames(headers, gsub("-", "_", names(headers)))
+  xdf_i <<- xdf_i + 1
+  headers$payload <- list(payload)
+  xdf[xdf_i] <<- list(headers)
+}
+
+(n <- warc_stream_in(
+  system.file("extdata/sample.warc.gz", package="jwatr"),
+  myfun,
+  warc_types = "response"
+))
+```
+
+    ## [1] 299
+
+``` r
+xdf <- bind_rows(xdf)
+
+glimpse(xdf)
+```
+
+    ## Observations: 299
+    ## Variables: 9
+    ## $ warc_type           <chr> "response", "response", "response", "response", "response", "response", "response", "re...
+    ## $ warc_target_uri     <chr> "dns:www.archive.org", "http://www.archive.org/robots.txt", "http://www.archive.org/", ...
+    ## $ warc_date           <chr> "2008-04-30T20:48:25Z", "2008-04-30T20:48:25Z", "2008-04-30T20:48:26Z", "2008-04-30T20:...
+    ## $ warc_ip_address     <chr> "68.87.76.178", "207.241.229.39", "207.241.229.39", "207.241.229.39", "207.241.229.39",...
+    ## $ warc_record_id      <chr> "<urn:uuid:ff728363-2d5f-4f5f-b832-9552de1a6037>", "<urn:uuid:e7c9eff8-f5bc-4aeb-b3d2-9...
+    ## $ content_type        <chr> "text/dns", "application/http; msgtype=response", "application/http; msgtype=response",...
+    ## $ content_length      <chr> "56", "782", "680", "29000", "1963", "1424", "564", "50832", "14473", "66", "260", "169...
+    ## $ payload             <list> [<32, 30, 30, 38, 30, 34, 33, 30, 32, 30, 34, 38, 32, 35, 0a, 77, 77, 77, 2e, 61, 72, ...
+    ## $ warc_payload_digest <chr> NA, "sha1:SUCGMUVXDKVB5CS2NL4R4JABNX7K466U", "sha1:2WAXX5NUWNNCS2BDKCO5OVDQBJVNKIVV", "...
+
+``` r
+count(xdf, content_type)
+```
+
+    ## # A tibble: 2 x 2
+    ##                         content_type     n
+    ##                                <chr> <int>
+    ## 1 application/http; msgtype=response   261
+    ## 2                           text/dns    38
+
+``` r
+cat(rawToChar(xdf$payload[[1]]))
+```
+
+    ## 20080430204825
+    ## www.archive.org. 589 IN  A   207.241.229.39
 
 ### Test Results
 
@@ -256,7 +316,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Mon Aug 21 07:07:41 2017"
+    ## [1] "Mon Aug 21 09:05:54 2017"
 
 ``` r
 test_dir("tests/")
