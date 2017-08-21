@@ -1,7 +1,7 @@
 
 `jwatr` : Tools to Query and Create Web Archive Files Using the Java Web Archive Toolkit
 
-The Java Web Archive Toolkit ('JWAT') <https://sbforge.org/display/JWAT/Overview> is a library of Java objects and methods which enables reading, writing and validating web archive files. Intial support is provided to read 'gzip' compressed 'WARC' files. Future plans include support for reading and writing all formats supported by 'JWAT'.
+The Java Web Archive Toolkit ('JWAT') <https://sbforge.org/display/JWAT/Overview> is a library of Java objects and methods which enables reading, writing and validating web archive files.
 
 WIP!!! Reading & writing need some optimization and edge case checking. There's also a chance I'll change the name to `warc` but some folks are using that package now and I dinna want to cause pain there yet.
 
@@ -182,7 +182,7 @@ glimpse(xdf)
     ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
     ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
     ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
-    ## $ warc_record_id             <chr> "<urn:uuid:6719c595-b979-45e3-be56-0cbb9f7dba6d>", "<urn:uuid:b14f9fda-28ae-44ea...
+    ## $ warc_record_id             <chr> "<urn:uuid:56467c21-77f3-4f31-b21e-0b786016ca23>", "<urn:uuid:90f19068-8baa-491d...
     ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
 
 ``` r
@@ -239,7 +239,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Mon Aug 21 04:48:20 2017"
+    ## [1] "Mon Aug 21 04:50:28 2017"
 
 ``` r
 test_dir("tests/")
