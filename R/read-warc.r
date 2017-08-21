@@ -1,7 +1,7 @@
-#' Read a WARC file
+#' Read a WARC file (compressed or uncompressed)
 #'
-#' The API for this functiuon is likely to change since this is a WIP. Optimizations
-#' will be occurring at the Java-level as well (this was a lazy PoC implementation).
+#' NOTE: The API for this functiuon is likely to change since this is a WIP. Optimizations
+#' will be occurring at the Java-level as well.
 #'
 #' @section Reading Large WARC files:
 #'
@@ -20,7 +20,6 @@
 #' all into memory.
 #'
 #' @md
-#' @note Presently only works with gzip'd WARC files (but they are most common)
 #' @param path path to WARF file
 #' @param warc_types if not `NULL` and one or more of `warcinfo`, `request`, `response`,
 #'        `resource`, `metadata`, `revisit`, `conversion` then returned WARC records
@@ -29,6 +28,8 @@
 #'        be included.
 #' @export
 #' @examples
+#' read_warc(system.file("extdata/bbc.warc", package="jwatr"))
+#'
 #' read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
 #'           warc_types = "response", include_payload = FALSE)
 read_warc <- function(path, warc_types = NULL, include_payload = FALSE) {
@@ -46,24 +47,26 @@ read_warc <- function(path, warc_types = NULL, include_payload = FALSE) {
 
   path <- path.expand(path)
 
+  if (!file.exists(path)) stop(sprintf('"%s" not found.', path, .call=FALSE))
+
   warc_obj <- new(J("is.rud.wrc.App"))
   warc_obj$process(path)
 
   suppressWarnings(
     data_frame(
-      warc_record_id = warc_obj$warcRecordIdStr,
+      target_uri = warc_obj$warcTargetUriStr,
+      ip_address = warc_obj$warcIpAddress,
       warc_content_type = warc_obj$contentTypeStr,
       warc_type = warc_obj$warcTypeStr,
-      ip_address = warc_obj$warcIpAddress,
       content_length = as.numeric(warc_obj$contentLengthStr),
       payload_type = warc_obj$warcIdentifiedPayloadTypeStr,
       profile = warc_obj$warcProfileStr,
-      target_uri = warc_obj$warcTargetUriStr,
       date = as.POSIXct(warc_obj$warcDateStr),
       http_status_code = as.numeric(warc_obj$httpStatusCode),
       http_protocol_content_type = warc_obj$httpProtocolContentType,
       http_version = warc_obj$httpVersion,
-      http_raw_headers = lapply(warc_obj$httpRawHeaders, .jevalArray)
+      http_raw_headers = lapply(warc_obj$httpRawHeaders, .jevalArray),
+      warc_record_id = warc_obj$warcRecordIdStr
     )
   ) -> xdf
 

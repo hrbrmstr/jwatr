@@ -9,7 +9,7 @@ The following functions are implemented:
 
 *Reading*
 
--   `read_warc`: Read a WARC file (currently gzip stream WARCs)
+-   `read_warc`: Read a WARC file (compressed or uncompressed)
 
 *Writing*
 
@@ -49,9 +49,31 @@ library(tidyverse)
 packageVersion("jwatr")
 ```
 
-    ## [1] '0.1.0'
+    ## [1] '0.2.0'
 
 ``` r
+# small, uncompressed WARC file
+glimpse(read_warc(system.file("extdata/bbc.warc", package="jwatr")))
+```
+
+    ## Observations: 1
+    ## Variables: 13
+    ## $ target_uri                 <chr> "http://news.bbc.co.uk/2/hi/africa/3414345.stm"
+    ## $ ip_address                 <chr> "212.58.244.61"
+    ## $ warc_content_type          <chr> "application/http; msgtype=response"
+    ## $ warc_type                  <chr> "response"
+    ## $ content_length             <dbl> 43428
+    ## $ payload_type               <chr> NA
+    ## $ profile                    <chr> NA
+    ## $ date                       <dttm> 2014-08-02
+    ## $ http_status_code           <dbl> 200
+    ## $ http_protocol_content_type <chr> "text/html"
+    ## $ http_version               <chr> "HTTP/1.1"
+    ## $ http_raw_headers           <list> <48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0a, 53, 65, 72, 76...
+    ## $ warc_record_id             <chr> "<urn:uuid:ffbfb0c0-6456-42b0-af03-3867be6fc09f>"
+
+``` r
+# larger example
 xdf <- read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
                  warc_types = "response", TRUE)
 
@@ -60,19 +82,19 @@ glimpse(xdf)
 
     ## Observations: 299
     ## Variables: 14
-    ## $ warc_record_id             <chr> "<urn:uuid:ff728363-2d5f-4f5f-b832-9552de1a6037>", "<urn:uuid:e7c9eff8-f5bc-4aeb...
+    ## $ target_uri                 <chr> "dns:www.archive.org", "http://www.archive.org/robots.txt", "http://www.archive....
+    ## $ ip_address                 <chr> "68.87.76.178", "207.241.229.39", "207.241.229.39", "207.241.229.39", "207.241.2...
     ## $ warc_content_type          <chr> "text/dns", "application/http; msgtype=response", "application/http; msgtype=res...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "respons...
-    ## $ ip_address                 <chr> "68.87.76.178", "207.241.229.39", "207.241.229.39", "207.241.229.39", "207.241.2...
     ## $ content_length             <dbl> 56, 782, 680, 29000, 1963, 1424, 564, 50832, 14473, 66, 260, 16969, 59, 3135, 13...
     ## $ payload_type               <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
     ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, ...
-    ## $ target_uri                 <chr> "dns:www.archive.org", "http://www.archive.org/robots.txt", "http://www.archive....
     ## $ date                       <dttm> 2008-04-30, 2008-04-30, 2008-04-30, 2008-04-30, 2008-04-30, 2008-04-30, 2008-04...
     ## $ http_status_code           <dbl> NA, 200, 200, 200, 200, 200, 200, 200, 200, NA, 200, 200, NA, 200, 200, 200, 200...
     ## $ http_protocol_content_type <chr> NA, "text/plain; charset=UTF-8", "text/html; charset=UTF-8", "text/html; charset...
     ## $ http_version               <chr> NA, "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTT...
     ## $ http_raw_headers           <list> [<>, <48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 44, 6...
+    ## $ warc_record_id             <chr> "<urn:uuid:ff728363-2d5f-4f5f-b832-9552de1a6037>", "<urn:uuid:e7c9eff8-f5bc-4aeb...
     ## $ payload                    <list> [<32, 30, 30, 38, 30, 34, 33, 30, 32, 30, 34, 38, 32, 35, 0a, 77, 77, 77, 2e, 6...
 
 ``` r
@@ -82,21 +104,21 @@ imgs
 ```
 
     ## # A tibble: 55 x 14
-    ##                                     warc_record_id                  warc_content_type warc_type     ip_address
-    ##                                              <chr>                              <chr>     <chr>          <chr>
-    ##  1 <urn:uuid:248b06a8-1dd8-4f34-a7e3-7e0df27268e1> application/http; msgtype=response  response 207.241.229.39
-    ##  2 <urn:uuid:7f4eb3e1-8887-488e-b22d-8667925d3e15> application/http; msgtype=response  response 207.241.229.39
-    ##  3 <urn:uuid:7dc2f6b9-0f82-4e3c-9436-97a2f46874d9> application/http; msgtype=response  response 207.241.229.39
-    ##  4 <urn:uuid:0a556a1b-a3b3-4ec0-82e5-7b54ed5293cb> application/http; msgtype=response  response 207.241.229.39
-    ##  5 <urn:uuid:06c4c82e-1659-4265-9571-7483ba7bc802> application/http; msgtype=response  response 207.241.229.39
-    ##  6 <urn:uuid:677c328e-214b-4c5f-8058-a386ba7e2997> application/http; msgtype=response  response 207.241.229.39
-    ##  7 <urn:uuid:6ca0a72f-70c7-4af7-84c1-de56ec666419> application/http; msgtype=response  response 207.241.229.39
-    ##  8 <urn:uuid:8e9b9946-259a-4440-a396-174081d59fe5> application/http; msgtype=response  response 207.241.229.39
-    ##  9 <urn:uuid:847c6746-9c99-4de0-b29f-c1b7d3185685> application/http; msgtype=response  response 207.241.229.39
-    ## 10 <urn:uuid:31efe1d8-f7d1-4b1e-9a1d-48d57270ec61> application/http; msgtype=response  response 207.241.229.39
-    ## # ... with 45 more rows, and 10 more variables: content_length <dbl>, payload_type <chr>, profile <chr>,
-    ## #   target_uri <chr>, date <dttm>, http_status_code <dbl>, http_protocol_content_type <chr>, http_version <chr>,
-    ## #   http_raw_headers <list>, payload <list>
+    ##                                                target_uri     ip_address                  warc_content_type warc_type
+    ##                                                     <chr>          <chr>                              <chr>     <chr>
+    ##  1                http://www.archive.org/images/logoc.jpg 207.241.229.39 application/http; msgtype=response  response
+    ##  2    http://www.archive.org/images/go-button-gateway.gif 207.241.229.39 application/http; msgtype=response  response
+    ##  3                 http://www.archive.org/images/star.png 207.241.229.39 application/http; msgtype=response  response
+    ##  4              http://www.archive.org/images/hewlett.jpg 207.241.229.39 application/http; msgtype=response  response
+    ##  5    http://www.archive.org/images/alexalogo-archive.gif 207.241.229.39 application/http; msgtype=response  response
+    ##  6        http://www.archive.org/images/djvu-download.gif 207.241.229.39 application/http; msgtype=response  response
+    ##  7 http://www.archive.org/images/alexa_websearch_logo.gif 207.241.229.39 application/http; msgtype=response  response
+    ##  8          http://www.archive.org/images/ta2004_icon.jpg 207.241.229.39 application/http; msgtype=response  response
+    ##  9           http://www.archive.org/images/lizardtech.gif 207.241.229.39 application/http; msgtype=response  response
+    ## 10         http://www.archive.org/images/LOCLogoSmall.jpg 207.241.229.39 application/http; msgtype=response  response
+    ## # ... with 45 more rows, and 10 more variables: content_length <dbl>, payload_type <chr>, profile <chr>, date <dttm>,
+    ## #   http_status_code <dbl>, http_protocol_content_type <chr>, http_version <chr>, http_raw_headers <list>,
+    ## #   warc_record_id <chr>, payload <list>
 
 ``` r
 image_read(imgs$payload[[1]])
@@ -148,19 +170,19 @@ glimpse(xdf)
 
     ## Observations: 7
     ## Variables: 14
-    ## $ warc_record_id             <chr> "<urn:uuid:049ea07a-3700-4f90-b7a5-f95fa3452116>", "<urn:uuid:cd63c6ea-9978-4c7f...
+    ## $ target_uri                 <chr> "https://rud.is/b/", "https://rud.is/b/", "https://www.rstudio.com/", "https://w...
+    ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
-    ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
     ## $ content_length             <dbl> 38764, 38764, 334, 7244, 8207, 511564, 166003
     ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
     ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA
-    ## $ target_uri                 <chr> "https://rud.is/b/", "https://rud.is/b/", "https://www.rstudio.com/", "https://w...
-    ## $ date                       <dttm> 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20, 2017-08-20
+    ## $ date                       <dttm> 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21
     ## $ http_status_code           <dbl> 200, 200, 403, 200, 200, 200, 200
     ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
     ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
     ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
+    ## $ warc_record_id             <chr> "<urn:uuid:6719c595-b979-45e3-be56-0cbb9f7dba6d>", "<urn:uuid:b14f9fda-28ae-44ea...
     ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
 
 ``` r
@@ -217,7 +239,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Sun Aug 20 09:10:37 2017"
+    ## [1] "Mon Aug 21 04:48:20 2017"
 
 ``` r
 test_dir("tests/")
@@ -227,3 +249,7 @@ test_dir("tests/")
     ## OK: 1 SKIPPED: 0 FAILED: 0
     ## 
     ## DONE ===================================================================================================================
+
+### Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.

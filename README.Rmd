@@ -15,7 +15,7 @@ The following functions are implemented:
 
 *Reading*
 
-- `read_warc`:	Read a WARC file (currently gzip stream WARCs)
+- `read_warc`:	Read a WARC file (compressed or uncompressed)
 
 *Writing*
 
@@ -60,6 +60,10 @@ packageVersion("jwatr")
 ```
 
 ```{r message=FALSE, warning=FALSE, error=FALSE}
+# small, uncompressed WARC file
+glimpse(read_warc(system.file("extdata/bbc.warc", package="jwatr")))
+
+# larger example
 xdf <- read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
                  warc_types = "response", TRUE)
 
@@ -137,3 +141,6 @@ date()
 test_dir("tests/")
 ```
 
+### Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CONDUCT.md). By participating in this project you agree to abide by its terms.

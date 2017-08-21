@@ -2,7 +2,7 @@
 % Please edit documentation in R/read-warc.r
 \name{read_warc}
 \alias{read_warc}
-\title{Read a WARC file}
+\title{Read a WARC file (compressed or uncompressed)}
 \usage{
 read_warc(path, warc_types = NULL, include_payload = FALSE)
 }
@@ -17,11 +17,8 @@ will be filtered to only include the specified record types.}
 be included.}
 }
 \description{
-The API for this functiuon is likely to change since this is a WIP. Optimizations
-will be occurring at the Java-level as well (this was a lazy PoC implementation).
-}
-\note{
-Presently only works with gzip'd WARC files (but they are most common)
+NOTE: The API for this functiuon is likely to change since this is a WIP. Optimizations
+will be occurring at the Java-level as well.
 }
 \section{Reading Large WARC files}{
 
@@ -41,6 +38,8 @@ all into memory.
 }
 
 \examples{
+read_warc(system.file("extdata/bbc.warc", package="jwatr"))
+
 read_warc(system.file("extdata/sample.warc.gz", package="jwatr"),
           warc_types = "response", include_payload = FALSE)
 }

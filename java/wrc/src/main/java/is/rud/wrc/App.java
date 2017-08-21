@@ -186,6 +186,66 @@ public class App {
 
         }
 
+      } else {
+
+        if (WarcReaderFactory.isWarcFile(pbin)) {
+
+          warcReader = WarcReaderFactory.getReader(pbin);
+          warcReader.setWarcTargetUriProfile(uriProfile);
+          warcReader.setBlockDigestEnabled( true );
+          warcReader.setPayloadDigestEnabled( true );
+
+          while ((warcRecord = warcReader.getNextRecord()) != null) {
+
+            if (warcRecord.hasPayload()) {
+
+              httpHeader = warcRecord.getHttpHeader();
+              payload = warcRecord.getPayload();
+              warc_header = warcRecord.header ;
+
+              if (warc_header != null) {
+
+                tmp_contentLengthStr.add(warc_header.contentLengthStr);
+                tmp_warcIdentifiedPayloadTypeStr.add(warc_header.warcIdentifiedPayloadTypeStr);
+                tmp_warcProfileStr.add(warc_header.warcProfileStr);
+                tmp_warcTargetUriStr.add(warc_header.warcTargetUriStr);
+                tmp_warcRecordIdStr.add(warc_header.warcRecordIdStr);
+                tmp_contentTypeStr.add(warc_header.contentTypeStr);
+                tmp_warcTypeStr.add(warc_header.warcTypeStr);
+                tmp_warcIpAddress.add(warc_header.warcIpAddress);
+                tmp_warcDateStr.add(warc_header.warcDateStr);
+
+              } ;
+
+              byte[] payloadBytes = new byte[(int)payload.getRemaining()];
+              payload.getInputStream().read(payloadBytes);
+
+              warc_payload.add(payloadBytes);
+
+              if (httpHeader != null) {
+
+                tmp_httpStatusCode.add(httpHeader.getProtocolStatusCodeStr());
+                tmp_httpProtocolContentType.add(httpHeader.getProtocolContentType());
+                tmp_httpVersion.add(httpHeader.getProtocolVersion());
+                httpRawHeaders.add(httpHeader.getHeader());
+
+              } else {
+
+                tmp_httpStatusCode.add(null);
+                tmp_httpProtocolContentType.add(null);
+                tmp_httpVersion.add(null);
+                httpRawHeaders.add(new byte[0]);
+
+              }
+
+            }
+
+            warcRecord.close();
+
+          }
+
+        }
+
       }
 
     } catch (Throwable t) {
