@@ -18,6 +18,11 @@ The following functions are implemented:
 -   `warc_write_response`: Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 -   `close_warc_file`: Close a WARC file
 
+**`httr` Wrappers**
+
+-   `warc_GET`: WARC-ify an httr::GET request
+-   `warc_POST`: WARC-ify an httr::GET request
+
 **Utility**
 
 -   `payload_content`: Helper function to convert WARC raw headers+payload into something useful
@@ -192,15 +197,15 @@ glimpse(xdf)
     ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
-    ## $ content_length             <dbl> 38708, 38710, 612621, 7244, 8207, 511564, 166003
+    ## $ content_length             <dbl> 38498, 38500, 612614, 7244, 8207, 511564, 166003
     ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html; charset=UTF-...
     ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA
-    ## $ date                       <dttm> 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21, 2017-08-21
+    ## $ date                       <dttm> 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22
     ## $ http_status_code           <dbl> NA, NA, NA, 200, 200, 200, 200
     ## $ http_protocol_content_type <chr> NA, NA, NA, "text/html", "application/pdf", "application/json", "image/png"
     ## $ http_version               <chr> "HTTP/2", "HTTP/2", "HTTP/2", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
     ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a>, <48, 54, 54, 50, 2f, 32,...
-    ## $ warc_record_id             <chr> "<urn:uuid:0c352207-be9f-4994-89fe-6b64defa1596>", "<urn:uuid:fdefb9de-4e36-40e9...
+    ## $ warc_record_id             <chr> "<urn:uuid:36979c22-0ad6-49f3-8327-dca882968c9e>", "<urn:uuid:89a4d144-9713-4afa...
     ## $ payload                    <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a, 73, 65, 72, 76, 65, 72, 3...
 
 ``` r
@@ -231,9 +236,9 @@ select(xdf, content_length, http_protocol_content_type)
     ## # A tibble: 7 x 2
     ##   content_length http_protocol_content_type
     ##            <dbl>                      <chr>
-    ## 1          38708                       <NA>
-    ## 2          38710                       <NA>
-    ## 3         612621                       <NA>
+    ## 1          38498                       <NA>
+    ## 2          38500                       <NA>
+    ## 3         612614                       <NA>
     ## 4           7244                  text/html
     ## 5           8207            application/pdf
     ## 6         511564           application/json
@@ -316,7 +321,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Mon Aug 21 09:05:54 2017"
+    ## [1] "Tue Aug 22 14:15:35 2017"
 
 ``` r
 test_dir("tests/")
