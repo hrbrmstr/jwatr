@@ -43,18 +43,13 @@ payload_content <- function(url, ctype=NULL, headers, payload, as = NULL, type =
   as <- as %||% parseability(type)
   as <- match.arg(as, c("raw", "text", "parsed"))
 
-  if (is_path(x$content)) {
-    raw <- readBin(x$content, "raw", file.info(x$content)$size)
+  if (is_compressed(x$content)) {
+    rc <- rawConnection(x$content)
+    gzrc <- gzcon(rc)
+    raw <- readBin(gzrc, what="raw", n=length(x$content)*10)
+    close(gzrc)
   } else {
-    if (is_compressed(x$content)) {
-      rc <- rawConnection(x$content)
-      gzrc <- gzcon(rc)
-      raw <- readBin(gzrc, what="raw", n=length(x$content)*10)
-      close(gzrc)
-      close(rc)
-    } else {
-      raw <- x$content
-    }
+    raw <- x$content
   }
 
   switch(as,
