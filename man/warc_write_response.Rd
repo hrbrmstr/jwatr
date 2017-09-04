@@ -11,6 +11,9 @@ warc_write_response(wobj, x)
 
 \item{x}{Either a single, valid URL to retrieve the contents of or an \code{httr} \code{response} object}
 }
+\value{
+The passed-in \code{wobj} (thus, allowing for pipe chaining)
+}
 \description{
 If a plain, single, character URL is provided, a \code{curl} request will be made
 and the contents of the result will be added to the WARC file.

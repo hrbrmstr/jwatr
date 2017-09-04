@@ -19,6 +19,7 @@ The following functions are implemented:
 **Writing**
 
 - `warc_file`:	Create a new WARC file
+- `warc_write_warcinfo`:	Write a 'warcinfo' record to a WARC File
 - `warc_write_response`:	Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 - `close_warc_file`:	Close a WARC file
 
@@ -29,6 +30,7 @@ The following functions are implemented:
 
 **Utility**
 
+- `response_list_to_warc_file`:	Turns a list of 'httr' 'response' objects into a WARC file
 - `payload_content`:	Helper function to convert WARC raw headers+payload into something useful
 - `is_compressed`:	Test if a raw vector is gzip compressed
 

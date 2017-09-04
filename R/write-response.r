@@ -9,6 +9,7 @@
 #' @md
 #' @param wobj a WARC file object created with [warc_file]()
 #' @param x Either a single, valid URL to retrieve the contents of or an `httr` `response` object
+#' @return The passed-in `wobj` (thus, allowing for pipe chaining)
 #' @export
 #' @examples \dontrun{
 #' tf <- tempfile("test")

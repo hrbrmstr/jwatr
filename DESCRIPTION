@@ -1,7 +1,7 @@
 Package: jwatr
 Type: Package
 Title: Tools to Query and Create Web Archive Files Using the Java Web Archive Toolkit
-Version: 0.2.0
+Version: 0.3.0
 Date: 2017-08-21
 Author: Bob Rudis (bob@rud.is)
 Maintainer: Bob Rudis <bob@rud.is>
@@ -27,7 +27,8 @@ Imports:
     curl,
     stringi,
     tools,
-    stats
+    stats,
+    scales
 RoxygenNote: 6.0.1
 Remotes: github::hrbrmstr/jwatjars
 VignetteBuilder: knitr

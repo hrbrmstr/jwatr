@@ -7,13 +7,14 @@
 #' @param warc_record_id A unique identifier for the WARC record. If not provided one
 #'        will be generated with `UUIDgenerate`.
 #' @param warc_info A named `list` with fields to store for the `warcinfo` record.
+#' @return The passed-in `wobj` (thus, allowing for pipe chaining)
 #' @export
 warc_write_warcinfo <- function(
   wobj,
   warc_date = Sys.time(),
   warc_record_id = NULL,
   warc_info = list(
-    software=sprintf("jwatr %s", packageVersion("jwatr")),
+    software = sprintf("jwatr %s", packageVersion("jwatr")),
     format = "WARC File Format 1.0"
   )) {
 
@@ -44,6 +45,6 @@ warc_write_warcinfo <- function(
 
   class(wobj) <- "warc_file"
 
-  wobj
+  invisible(wobj)
 
 }

@@ -16,4 +16,5 @@
 #' @importFrom urltools domain suffix_extract
 #' @importFrom tibble data_frame as_data_frame
 #' @importFrom stringi stri_split_fixed stri_split_lines
+#' @importFrom scales comma
 NULL

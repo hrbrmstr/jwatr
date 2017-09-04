@@ -15,6 +15,7 @@ The following functions are implemented:
 **Writing**
 
 -   `warc_file`: Create a new WARC file
+-   `warc_write_warcinfo`: Write a 'warcinfo' record to a WARC File
 -   `warc_write_response`: Write simple `httr::GET` requests or full `httr` `response` objects to a WARC file
 -   `close_warc_file`: Close a WARC file
 
@@ -25,6 +26,7 @@ The following functions are implemented:
 
 **Utility**
 
+-   `response_list_to_warc_file`: Turns a list of 'httr' 'response' objects into a WARC file
 -   `payload_content`: Helper function to convert WARC raw headers+payload into something useful
 -   `is_compressed`: Test if a raw vector is gzip compressed
 
@@ -80,7 +82,7 @@ glimpse(read_warc(system.file("extdata/bbc.warc", package="jwatr")))
     ## $ http_status_code           <dbl> 200
     ## $ http_protocol_content_type <chr> "text/html"
     ## $ http_version               <chr> "HTTP/1.1"
-    ## $ http_raw_headers           <list> <48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0a, 53, 65, 72, 76...
+    ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0a, 53, 65, 72, 7...
     ## $ warc_record_id             <chr> "<urn:uuid:ffbfb0c0-6456-42b0-af03-3867be6fc09f>"
 
 ``` r
@@ -197,16 +199,16 @@ glimpse(xdf)
     ## $ ip_address                 <chr> "2604:a880:800:10::6bc:2001", "2604:a880:800:10::6bc:2001", "104.196.200.5", "13...
     ## $ warc_content_type          <chr> "application/http; msgtype=response", "application/http; msgtype=response", "app...
     ## $ warc_type                  <chr> "response", "response", "response", "response", "response", "response", "response"
-    ## $ content_length             <dbl> 38498, 38500, 612614, 7244, 8207, 511564, 166003
-    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html; charset=UTF-...
+    ## $ content_length             <dbl> 38591, 38591, 334, 7480, 8207, 511592, 166003
+    ## $ payload_type               <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
     ## $ profile                    <chr> NA, NA, NA, NA, NA, NA, NA
-    ## $ date                       <dttm> 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22, 2017-08-22
-    ## $ http_status_code           <dbl> NA, NA, NA, 200, 200, 200, 200
-    ## $ http_protocol_content_type <chr> NA, NA, NA, "text/html", "application/pdf", "application/json", "image/png"
-    ## $ http_version               <chr> "HTTP/2", "HTTP/2", "HTTP/2", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
-    ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a>, <48, 54, 54, 50, 2f, 32,...
-    ## $ warc_record_id             <chr> "<urn:uuid:36979c22-0ad6-49f3-8327-dca882968c9e>", "<urn:uuid:89a4d144-9713-4afa...
-    ## $ payload                    <list> [<48, 54, 54, 50, 2f, 32, 20, 32, 30, 30, 20, 0d, 0a, 73, 65, 72, 76, 65, 72, 3...
+    ## $ date                       <dttm> 2017-09-04, 2017-09-04, 2017-09-04, 2017-09-04, 2017-09-04, 2017-09-04, 2017-09-04
+    ## $ http_status_code           <dbl> 200, 200, 403, 200, 200, 200, 200
+    ## $ http_protocol_content_type <chr> "text/html; charset=UTF-8", "text/html; charset=UTF-8", "text/html", "text/html"...
+    ## $ http_version               <chr> "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1", "HTTP/1.1"
+    ## $ http_raw_headers           <list> [<48, 54, 54, 50, 2f, 31, 2e, 31, 20, 32, 30, 30, 20, 4f, 4b, 0d, 0a, 53, 65, 7...
+    ## $ warc_record_id             <chr> "<urn:uuid:25980e44-6242-4d41-90b3-1a4b6b40e1f3>", "<urn:uuid:fc1fd6a6-1cb4-498a...
+    ## $ payload                    <list> [<3c, 21, 64, 6f, 63, 74, 79, 70, 65, 20, 68, 74, 6d, 6c, 3e, 0d, 0a, 0d, 0a, 3...
 
 ``` r
 # decode the WARC stored JSON response from the UK Crimes API
@@ -219,13 +221,13 @@ glimpse(jsonlite::fromJSON(rawToChar(xdf[6,]$payload[[1]]), flatten=TRUE))
     ## $ location_type           <chr> "Force", "Force", "Force", "Force", "Force", "Force", "Force", "Force", "Force", "F...
     ## $ context                 <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
     ## $ persistent_id           <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
-    ## $ id                      <int> 54163555, 54167687, 54167689, 54168393, 54168392, 54168391, 54168386, 54168381, 541...
+    ## $ id                      <int> 54165853, 54168392, 54164859, 54168391, 54168386, 54168384, 54168381, 54165308, 541...
     ## $ location_subtype        <chr> "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",...
     ## $ month                   <chr> "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-01", "2017-...
-    ## $ location.latitude       <chr> "52.616961", "52.629963", "52.641646", "52.635184", "52.627880", "52.636250", "52.6...
-    ## $ location.longitude      <chr> "-1.120719", "-1.122291", "-1.131486", "-1.135455", "-1.144730", "-1.133691", "-1.1...
-    ## $ location.street.id      <int> 882391, 883268, 884340, 883410, 883453, 883415, 882352, 883332, 882350, 883148, 883...
-    ## $ location.street.name    <chr> "On or near Hartopp Road", "On or near Prebend Street", "On or near Yarmouth Street...
+    ## $ location.latitude       <chr> "52.634324", "52.627880", "52.636256", "52.636250", "52.620211", "52.627363", "52.6...
+    ## $ location.longitude      <chr> "-1.135916", "-1.144730", "-1.125933", "-1.133691", "-1.133638", "-1.126878", "-1.1...
+    ## $ location.street.id      <int> 883326, 883453, 883316, 883415, 882352, 883250, 883332, 883356, 883271, 882445, 883...
+    ## $ location.street.name    <chr> "On or near St Martins", "On or near Tarragon Road", "On or near Wimbledon Street",...
     ## $ outcome_status.category <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
     ## $ outcome_status.date     <chr> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,...
 
@@ -236,12 +238,12 @@ select(xdf, content_length, http_protocol_content_type)
     ## # A tibble: 7 x 2
     ##   content_length http_protocol_content_type
     ##            <dbl>                      <chr>
-    ## 1          38498                       <NA>
-    ## 2          38500                       <NA>
-    ## 3         612614                       <NA>
-    ## 4           7244                  text/html
+    ## 1          38591   text/html; charset=UTF-8
+    ## 2          38591   text/html; charset=UTF-8
+    ## 3            334                  text/html
+    ## 4           7480                  text/html
     ## 5           8207            application/pdf
-    ## 6         511564           application/json
+    ## 6         511592           application/json
     ## 7         166003                  image/png
 
 ``` r
@@ -249,7 +251,7 @@ image_read(xdf$payload[[5]])
 ```
 
     ##   format width height colorspace filesize
-    ## 1    PDF   595    842       sRGB    27165
+    ## 1    PDF   595    842       sRGB    27600
 
 ![](imgs/img2.png)
 
@@ -321,7 +323,7 @@ library(testthat)
 date()
 ```
 
-    ## [1] "Tue Aug 22 14:15:35 2017"
+    ## [1] "Sun Sep  3 23:33:19 2017"
 
 ``` r
 test_dir("tests/")

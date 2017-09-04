@@ -19,6 +19,9 @@ will be generated with \code{UUIDgenerate}.}
 
 \item{warc_info}{A named \code{list} with fields to store for the \code{warcinfo} record.}
 }
+\value{
+The passed-in \code{wobj} (thus, allowing for pipe chaining)
+}
 \description{
 Write a \code{warcinfo} record to a WARC File
 }
