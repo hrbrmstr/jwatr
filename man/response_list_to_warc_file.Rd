@@ -45,3 +45,14 @@ processing environments.
 List elements that are not plain or "safe" \code{response} objects will be gracefully
 skipped over.
 }
+\examples{
+\dontrun{
+urls <- c("https://rud.is/", "https://rud.is/b/")
+
+res_list <- lapply(urls, httr::GET)
+
+tf <- tempfile()
+response_list_to_warc_file(res_list, tf)
+ulink(tf)
+}
+}

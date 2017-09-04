@@ -29,6 +29,15 @@
 #' @param warc_info a named `list` of fields to go into the payload of the `warcinfo`
 #'        record that will be at the top of the WARC file
 #' @export
+#' @examples \dontrun{
+#' urls <- c("https://rud.is/", "https://rud.is/b/")
+#'
+#' res_list <- lapply(urls, httr::GET)
+#'
+#' tf <- tempfile()
+#' response_list_to_warc_file(res_list, tf)
+#' ulink(tf)
+#' }
 response_list_to_warc_file <- function(
   httr_response_list, path, gzip = TRUE,
   warc_date = Sys.time(), warc_record_id = NULL,
@@ -37,8 +46,6 @@ response_list_to_warc_file <- function(
     format = "WARC File Format 1.0")) {
 
   path <- path.expand(path)
-  path <- gsub("\\.warc[\\.gz]$", "", path)
-  path <- sprintf("%s.warc", path)
 
   if (!dir.exists(dirname(path))) stop("Path not found", call.=FALSE)
 
@@ -55,13 +62,13 @@ response_list_to_warc_file <- function(
       if (inherits(r, "response")) {
         warc_write_response(wobj, r)
       } else if ((length(setdiff(names(r), c("result", "error"))) == 0)) {
-        if ((!is.null(r$result)) && inherits(r$results, "response")) {
+        if ((!is.null(r$result)) && inherits(r$result, "response")) {
           wobj <- warc_write_response(wobj, r$result)
         } else {
-          message(sprintf("Skipping element %d...", scales::comma(idx)))
+          message(sprintf("Skipping element %s...", scales::comma(idx)))
         }
       } else {
-        message(sprintf("Skipping element %d...", scales::comma(idx)))
+        message(sprintf("Skipping element %s...", scales::comma(idx)))
       }
     }
 
